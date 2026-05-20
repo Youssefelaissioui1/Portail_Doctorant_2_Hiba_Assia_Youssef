@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Fiche doctorant')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>
+    <span th:text="${doctorant.nomComplet}"></span>
+  </h4>
+  <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-person me-2"></i>Informations
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">CNE</td><td th:text="${doctorant.cne}">-</td></tr>
+          <tr><td class="text-muted small">Email</td><td th:text="${doctorant.email}">-</td></tr>
+          <tr><td class="text-muted small">Spécialité</td><td th:text="${doctorant.specialite ?: '—'}">-</td></tr>
+          <tr><td class="text-muted small">Labo.</td><td th:text="${doctorant.laboratoire ?: '—'}">-</td></tr>
+          <tr><td class="text-muted small">Directeur</td>
+              <td th:text="${doctorant.directeur != null ? doctorant.directeur.nomComplet : '—'}">-</td></tr>
+          <tr><td class="text-muted small">1ère inscription</td>
+              <td th:text="${#temporals.format(doctorant.datePremiereInscription,'dd/MM/yyyy')}">-</td></tr>
+          <tr><td class="text-muted small">Durée</td>
+              <td><span th:text="${doctorant.nombreAnnees} + ' an(s)'"></span>
+                  <i class="bi bi-exclamation-triangle text-warning ms-1" th:if="${doctorant.nombreAnnees >= 5}"></i>
+              </td></tr>
+          <tr><td class="text-muted small">Statut</td>
+              <td><span th:class="'badge badge-' + ${doctorant.statut.name()}"
+                        th:text="${doctorant.statut.name().replace('_',' ')}"></span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-body"><strong>Sujet :</strong> <span th:text="${doctorant.sujetThese}"></span></div>
+    </div>
+    <div class="row g-2">
+      <div class="col-4 text-center">
+        <div class="card p-3" th:classappend="${articlesQ1Q2 >= 2} ? 'border-success' : 'border-warning'">
+          <div class="fs-3 fw-bold" th:classappend="${articlesQ1Q2 >= 2} ? 'text-success' : 'text-warning'"
+               th:text="${articlesQ1Q2} + '/2'"></div>
+          <small class="text-muted">Articles Q1/Q2</small>
+        </div>
+      </div>
+      <div class="col-4 text-center">
+        <div class="card p-3" th:classappend="${conferences >= 2} ? 'border-success' : 'border-warning'">
+          <div class="fs-3 fw-bold" th:classappend="${conferences >= 2} ? 'text-success' : 'text-warning'"
+               th:text="${conferences} + '/2'"></div>
+          <small class="text-muted">Conférences</small>
+        </div>
+      </div>
+      <div class="col-4 text-center">
+        <div class="card p-3" th:classappend="${heures >= 200} ? 'border-success' : 'border-warning'">
+          <div class="fs-3 fw-bold" th:classappend="${heures >= 200} ? 'text-success' : 'text-warning'"
+               th:text="${heures} + 'h'"></div>
+          <small class="text-muted">Formation</small>
+        </div>
+      </div>
+    </div>
+    <div class="card mt-3" th:classappend="${prerequisOk} ? 'border-success' : 'border-secondary'">
+      <div class="card-body text-center">
+        <span th:if="${prerequisOk}" class="text-success fw-bold">
+          <i class="bi bi-check-circle-fill me-2"></i>Tous les prérequis sont remplis
+        </span>
+        <span th:unless="${prerequisOk}" class="text-muted">Prérequis incomplets</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

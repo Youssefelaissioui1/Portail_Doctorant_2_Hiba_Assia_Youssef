@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Ma progression')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-graph-up me-2 text-primary"></i>Ma progression</h4>
+  <span th:class="'badge fs-6 badge-' + (${prerequisOk} ? 'VALIDE' : 'EN_ATTENTE')"
+        th:text="${prerequisOk} ? 'Prérequis complets ✓' : 'En cours…'"></span>
+</div>
+
+<!-- Barres de progression -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="fw-bold"><i class="bi bi-journal-text me-2 text-primary"></i>Articles Q1/Q2</h6>
+        <div class="fs-2 fw-bold" th:classappend="${articlesQ1Q2 >= seuilArticles} ? 'text-success' : 'text-warning'"
+             th:text="${articlesQ1Q2} + ' / ' + ${seuilArticles}"></div>
+        <div class="progress mt-2" style="height:12px;">
+          <div class="progress-bar" th:classappend="${articlesQ1Q2 >= seuilArticles} ? 'bg-success' : 'bg-warning'"
+               th:style="'width:' + (${articlesQ1Q2} >= ${seuilArticles} ? 100 : ${articlesQ1Q2} * 100 / ${seuilArticles}) + '%'"></div>
+        </div>
+        <a th:href="@{/publications}" class="btn btn-outline-primary btn-sm mt-3 w-100">Mes publications</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="fw-bold"><i class="bi bi-mic me-2 text-success"></i>Conférences</h6>
+        <div class="fs-2 fw-bold" th:classappend="${conferences >= seuilConferences} ? 'text-success' : 'text-warning'"
+             th:text="${conferences} + ' / ' + ${seuilConferences}"></div>
+        <div class="progress mt-2" style="height:12px;">
+          <div class="progress-bar" th:classappend="${conferences >= seuilConferences} ? 'bg-success' : 'bg-warning'"
+               th:style="'width:' + (${conferences} >= ${seuilConferences} ? 100 : ${conferences} * 100 / ${seuilConferences}) + '%'"></div>
+        </div>
+        <a th:href="@{/publications}" class="btn btn-outline-success btn-sm mt-3 w-100">Mes publications</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="fw-bold"><i class="bi bi-mortarboard me-2 text-warning"></i>Formation (heures)</h6>
+        <div class="fs-2 fw-bold" th:classappend="${heures >= seuilHeures} ? 'text-success' : 'text-warning'"
+             th:text="${heures} + ' / ' + ${seuilHeures} + 'h'"></div>
+        <div class="progress mt-2" style="height:12px;">
+          <div class="progress-bar" th:classappend="${heures >= seuilHeures} ? 'bg-success' : 'bg-warning'"
+               th:style="'width:' + (${heures} >= ${seuilHeures} ? 100 : ${heures} * 100 / ${seuilHeures}) + '%'"></div>
+        </div>
+        <a th:href="@{/formations}" class="btn btn-outline-warning btn-sm mt-3 w-100">Mes formations</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau publications -->
+<div class="card mb-3">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-journal-text me-2"></i>Publications</div>
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Titre</th><th>Type</th><th>Quartile</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${publications}">
+          <td th:text="${#strings.abbreviate(p.titre,55)}">-</td>
+          <td th:text="${p.type.name().replace('_',' ')}">-</td>
+          <td th:text="${p.quartile != null ? p.quartile.name() : '—'}">-</td>
+          <td><span th:class="'badge badge-' + ${p.statut.name()}" th:text="${p.statut.name()}">-</span></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(publications)}">
+          <td colspan="4" class="text-center text-muted py-3">Aucune publication déclarée.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tableau formations -->
+<div class="card">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-mortarboard me-2"></i>Formations</div>
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Intitulé</th><th>Heures</th><th>Organisateur</th><th>Validée</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="f : ${formations}">
+          <td th:text="${f.intitule}">-</td>
+          <td th:text="${f.heures} + 'h'">-</td>
+          <td th:text="${f.organisateur ?: '—'}">-</td>
+          <td>
+            <i class="bi bi-check-circle-fill text-success" th:if="${f.validee}"></i>
+            <i class="bi bi-hourglass-split text-warning" th:unless="${f.validee}"></i>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(formations)}">
+          <td colspan="4" class="text-center text-muted py-3">Aucune formation déclarée.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

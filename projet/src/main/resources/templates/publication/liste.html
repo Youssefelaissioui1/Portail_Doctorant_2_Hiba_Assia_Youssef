@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Mes publications')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Mes publications</h4>
+  <a th:href="@{/publications/nouvelle}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>Ajouter
+  </a>
+</div>
+
+<!-- Compteurs -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card h-100">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <div class="text-muted small">Articles Q1/Q2 validés</div>
+          <div class="fs-2 fw-bold" th:classappend="${articlesQ1Q2 >= seuilArticles} ? 'text-success' : 'text-warning'"
+               th:text="${articlesQ1Q2} + ' / ' + ${seuilArticles}">0/2</div>
+        </div>
+        <i th:class="${articlesQ1Q2 >= seuilArticles} ? 'bi bi-check-circle-fill text-success stat-icon' : 'bi bi-hourglass-split text-warning stat-icon'"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card green h-100">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <div class="text-muted small">Conférences validées</div>
+          <div class="fs-2 fw-bold" th:classappend="${conferences >= seuilConferences} ? 'text-success' : 'text-warning'"
+               th:text="${conferences} + ' / ' + ${seuilConferences}">0/2</div>
+        </div>
+        <i th:class="${conferences >= seuilConferences} ? 'bi bi-check-circle-fill text-success stat-icon' : 'bi bi-hourglass-split text-warning stat-icon'"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card orange h-100">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <div class="text-muted small">Total déclarées</div>
+          <div class="fs-2 fw-bold text-primary" th:text="${#lists.size(publications)}">0</div>
+        </div>
+        <i class="bi bi-journals stat-icon text-primary"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau -->
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Titre</th><th>Type</th><th>Quartile</th>
+          <th>Revue / Conférence</th><th>Date</th><th>Statut</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${publications}">
+          <td style="max-width:280px;">
+            <div class="fw-semibold small" th:text="${#strings.abbreviate(p.titre,55)}">-</div>
+            <small class="text-muted" th:if="${p.doi}" th:text="'DOI : ' + ${p.doi}"></small>
+          </td>
+          <td><span class="badge bg-secondary small" th:text="${p.type.name().replace('_',' ')}">-</span></td>
+          <td>
+            <span th:if="${p.quartile != null}"
+                  th:class="'badge' + (${p.quartile.name() == 'Q1' or p.quartile.name() == 'Q2'} ? ' bg-success' : ' bg-light text-dark')"
+                  th:text="${p.quartile.name()}">-</span>
+            <span th:unless="${p.quartile != null}" class="text-muted small">—</span>
+          </td>
+          <td class="small text-muted" th:text="${#strings.abbreviate(p.revueOuConference ?: '—',35)}">-</td>
+          <td class="small" th:text="${p.datePublication != null ? #temporals.format(p.datePublication,'MM/yyyy') : '—'}">-</td>
+          <td><span th:class="'badge badge-' + ${p.statut.name()}" th:text="${p.statut.name()}">-</span></td>
+          <td>
+            <a th:href="@{/publications/{id}(id=${p.id})}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(publications)}">
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-journal-plus fs-2 d-block mb-2"></i>
+            Aucune publication déclarée.
+            <a th:href="@{/publications/nouvelle}" class="d-block mt-2">Ajouter ma première publication</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

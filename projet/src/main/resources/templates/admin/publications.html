@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Publications – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Validation des publications</h4>
+    <p class="text-muted small mb-0">Validez ou rejetez les publications déclarées par les doctorants.</p>
+  </div>
+  <span class="badge bg-warning text-dark fs-6" th:text="${nbEnAttente} + ' en attente'"></span>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link" th:classappend="${filtreStatut == null} ? ' active'"
+       th:href="@{/admin/publications}">Toutes</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:classappend="${filtreStatut == 'EN_ATTENTE'} ? ' active'"
+       th:href="@{/admin/publications?statut=EN_ATTENTE}">
+      En attente <span class="badge bg-warning text-dark ms-1" th:text="${nbEnAttente}">0</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:classappend="${filtreStatut == 'VALIDE'} ? ' active'"
+       th:href="@{/admin/publications?statut=VALIDE}">Validées</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:classappend="${filtreStatut == 'REJETE'} ? ' active'"
+       th:href="@{/admin/publications?statut=REJETE}">Rejetées</a>
+  </li>
+</ul>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Doctorant</th><th>Titre</th><th>Type</th><th>Quartile</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${publications}">
+          <td>
+            <div class="fw-semibold small" th:text="${p.doctorant.nomComplet}">-</div>
+            <small class="text-muted font-monospace" th:text="${p.doctorant.cne}">-</small>
+          </td>
+          <td style="max-width:200px;">
+            <div class="small fw-semibold" th:text="${#strings.abbreviate(p.titre,50)}">-</div>
+            <small class="text-muted" th:text="${#strings.abbreviate(p.revueOuConference ?: '',40)}"></small>
+          </td>
+          <td>
+            <span class="badge bg-secondary small"
+                  th:text="${p.type.name().replace('_',' ')}">-</span>
+          </td>
+          <td>
+            <span th:if="${p.quartile != null}"
+                  th:class="'badge' + (${p.quartile.name() == 'Q1' or p.quartile.name() == 'Q2'} ? ' bg-success' : ' bg-light text-dark border')"
+                  th:text="${p.quartile.name()}">-</span>
+            <span th:unless="${p.quartile != null}" class="text-muted small">—</span>
+          </td>
+          <td class="small"
+              th:text="${p.datePublication != null ? #temporals.format(p.datePublication,'MM/yyyy') : '—'}">-</td>
+          <td>
+            <span th:class="'badge badge-' + ${p.statut.name()}" th:text="${p.statut.name()}">-</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a th:href="@{/admin/publications/{id}(id=${p.id})}"
+                 class="btn btn-sm btn-outline-primary" title="Détail">
+                <i class="bi bi-eye"></i>
+              </a>
+              <form th:if="${p.statut.name() == 'EN_ATTENTE'}"
+                    th:action="@{/admin/publications/{id}/valider(id=${p.id})}" method="post" class="d-inline">
+                
+                <input type="hidden" name="commentaire" value="Validé"/>
+                <button type="submit" class="btn btn-sm btn-success" title="Valider"
+                        onclick="return confirm('Valider cette publication ?')">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+              </form>
+              <button th:if="${p.statut.name() == 'EN_ATTENTE'}"
+                      class="btn btn-sm btn-danger" title="Rejeter"
+                      data-bs-toggle="modal" th:attr="data-bs-target='#modal-pub-' + ${p.id}">
+                <i class="bi bi-x-lg"></i>
+              </button>
+
+              <!-- Modal rejet -->
+              <div class="modal fade" th:id="'modal-pub-' + ${p.id}" tabindex="-1">
+                <div class="modal-dialog"><div class="modal-content">
+                  <form th:action="@{/admin/publications/{id}/rejeter(id=${p.id})}" method="post">
+                    
+                    <div class="modal-header">
+                      <h5 class="modal-title fw-bold">Motif de rejet</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="small text-muted mb-2" th:text="${#strings.abbreviate(p.titre,70)}"></p>
+                      <textarea name="motifRejet" class="form-control" rows="3"
+                                placeholder="Expliquez le motif du rejet…" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                      <button type="submit" class="btn btn-danger fw-semibold">Confirmer le rejet</button>
+                    </div>
+                  </form>
+                </div></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(publications)}">
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-journal fs-2 d-block mb-2"></i>Aucune publication trouvée.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

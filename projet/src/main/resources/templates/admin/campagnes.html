@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Campagnes – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2 text-primary"></i>Campagnes d'inscription</h4>
+    <p class="text-muted small mb-0">Ouvrez et fermez les périodes d'inscription annuelles.</p>
+  </div>
+  <a th:href="@{/admin/campagnes/nouvelle}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>Nouvelle campagne
+  </a>
+</div>
+
+<!-- Campagne active -->
+<div th:if="${campagneActive != null}" class="alert alert-success d-flex align-items-center mb-4">
+  <i class="bi bi-calendar-check-fill me-3 fs-4"></i>
+  <div>
+    <strong>Campagne active : </strong>
+    <span th:text="${campagneActive.description}"></span>
+    · Ouverte du
+    <strong th:text="${#temporals.format(campagneActive.dateOuverture,'dd/MM/yyyy')}"></strong>
+    au
+    <strong th:text="${#temporals.format(campagneActive.dateFermeture,'dd/MM/yyyy')}"></strong>
+  </div>
+</div>
+<div th:unless="${campagneActive != null}" class="alert alert-warning d-flex align-items-center mb-4">
+  <i class="bi bi-calendar-x me-3 fs-4"></i>
+  <div>Aucune campagne n'est actuellement active. Les doctorants ne peuvent pas s'inscrire.</div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Année</th><th>Description</th><th>Ouverture</th><th>Fermeture</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="c : ${campagnes}"
+            th:classappend="${c.active} ? 'table-success bg-opacity-25' : ''">
+          <td class="fw-bold" th:text="${c.anneeUniversitaire}">-</td>
+          <td th:text="${c.description ?: '—'}">-</td>
+          <td th:text="${#temporals.format(c.dateOuverture,'dd/MM/yyyy')}">-</td>
+          <td th:text="${#temporals.format(c.dateFermeture,'dd/MM/yyyy')}">-</td>
+          <td>
+            <span th:if="${c.active}" class="badge bg-success">
+              <i class="bi bi-circle-fill me-1" style="font-size:.5rem;"></i>Active
+            </span>
+            <span th:unless="${c.active}" class="badge bg-secondary">Inactive</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a th:href="@{/admin/campagnes/{id}(id=${c.id})}"
+                 class="btn btn-sm btn-outline-primary" title="Détail">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a th:href="@{/admin/campagnes/{id}/modifier(id=${c.id})}"
+                 class="btn btn-sm btn-outline-secondary" title="Modifier">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form th:unless="${c.active}"
+                    th:action="@{/admin/campagnes/{id}/activer(id=${c.id})}" method="post" class="d-inline">
+                
+                <button type="submit" class="btn btn-sm btn-success" title="Activer"
+                        onclick="return confirm('Activer cette campagne ? L'autre campagne active sera désactivée.')">
+                  <i class="bi bi-toggle-on"></i>
+                </button>
+              </form>
+              <form th:if="${c.active}"
+                    th:action="@{/admin/campagnes/{id}/desactiver(id=${c.id})}" method="post" class="d-inline">
+                
+                <button type="submit" class="btn btn-sm btn-warning" title="Désactiver">
+                  <i class="bi bi-toggle-off"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(campagnes)}">
+          <td colspan="6" class="text-center text-muted py-5">
+            <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+            Aucune campagne créée.
+            <a th:href="@{/admin/campagnes/nouvelle}" class="d-block mt-2">Créer la première campagne</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

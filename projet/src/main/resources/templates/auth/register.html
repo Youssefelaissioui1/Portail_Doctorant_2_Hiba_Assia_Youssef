@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{shared/layout :: head('Inscription')}"></head>
+<body class="auth-page register-page">
+<div class="auth-page__accent" aria-hidden="true"></div>
+<div class="auth-page__decor" aria-hidden="true"></div>
+<div class="auth-page__decor auth-page__decor--2" aria-hidden="true"></div>
+
+<div class="auth-shell auth-shell--wide">
+    <div class="auth-card">
+        <div class="auth-card__body">
+            <div class="auth-brand auth-brand--accent" aria-hidden="true">
+                <i class="bi bi-person-plus-lg"></i>
+            </div>
+            <h1 class="auth-title">Nouvelle inscription</h1>
+            <p class="auth-subtitle">Doctorant&nbsp;: créez votre compte pour rejoindre le portail.</p>
+
+            <form th:action="@{/register}" th:object="${doctorant}" method="post">
+                <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger py-2 px-3 mb-3" role="alert">
+                    <i class="bi bi-exclamation-circle me-1"></i>Vérifiez les champs ci-dessous.
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="auth-label" for="reg-nom">Nom</label>
+                        <input id="reg-nom" type="text" th:field="*{nom}" class="form-control"
+                               th:classappend="${#fields.hasErrors('nom')} ? ' is-invalid'"
+                               autocomplete="family-name" required/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="auth-label" for="reg-prenom">Prénom</label>
+                        <input id="reg-prenom" type="text" th:field="*{prenom}" class="form-control"
+                               th:classappend="${#fields.hasErrors('prenom')} ? ' is-invalid'"
+                               autocomplete="given-name" required/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('prenom')}" th:errors="*{prenom}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="auth-label" for="reg-email">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input id="reg-email" type="email" th:field="*{email}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'"
+                                   autocomplete="email" placeholder="vous@univ.ma" required/>
+                        </div>
+                        <div class="invalid-feedback d-block mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="auth-label" for="reg-password">Mot de passe</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input id="reg-password" type="password" th:field="*{motDePasse}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('motDePasse')} ? ' is-invalid'"
+                                   autocomplete="new-password" placeholder="Au moins 6 caractères" required/>
+                        </div>
+                        <div class="invalid-feedback d-block mt-1" th:if="${#fields.hasErrors('motDePasse')}" th:errors="*{motDePasse}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="auth-label" for="reg-cne">CNE</label>
+                        <input id="reg-cne" type="text" th:field="*{cne}" class="form-control"
+                               autocomplete="off" placeholder="Numéro CNE" required/>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="auth-label" for="reg-sujet">Sujet de thèse</label>
+                        <textarea id="reg-sujet" th:field="*{sujetThese}" class="form-control" rows="2"
+                                  placeholder="Intitulé provisoire" required></textarea>
+                    </div>
+
+                    <div class="col-12 pt-1">
+                        <button type="submit" class="auth-btn auth-btn--accent">
+                            <i class="bi bi-person-plus"></i> Créer mon compte
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <p class="auth-muted-link mb-0">
+                Déjà inscrit&nbsp;?
+                <a th:href="@{/login}" class="auth-link">Se connecter</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body>
+</html>

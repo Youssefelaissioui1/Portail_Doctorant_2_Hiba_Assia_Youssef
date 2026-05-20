@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Inscriptions – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-0"><i class="bi bi-inbox me-2 text-primary"></i>Gestion des inscriptions</h4>
+    <p class="text-muted small mb-0">Validez ou rejetez les dossiers transmis par les directeurs de thèse.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a th:href="@{/admin/inscriptions/toutes}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-files me-1"></i>Toutes les inscriptions
+    </a>
+    <span class="badge bg-warning text-dark fs-6" th:text="${nbEnAttenteAdmin} + ' en attente'"></span>
+  </div>
+</div>
+
+<!-- Stats rapides -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-2 fw-bold text-primary" th:text="${nbEnAttenteDirecteur}">0</div>
+      <div class="small text-muted">Att. directeur</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card orange text-center p-3">
+      <div class="fs-2 fw-bold text-warning" th:text="${nbEnAttenteAdmin}">0</div>
+      <div class="small text-muted">Att. validation</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card green text-center p-3">
+      <div class="fs-2 fw-bold text-success" th:text="${nbValides}">0</div>
+      <div class="small text-muted">Validées</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card red text-center p-3">
+      <div class="fs-2 fw-bold text-danger" th:text="${nbRejetes}">0</div>
+      <div class="small text-muted">Rejetées</div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtres -->
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link" th:classappend="${statutActif == null} ? ' active'"
+       th:href="@{/admin/inscriptions}">
+      En attente admin <span class="badge bg-warning text-dark ms-1" th:text="${nbEnAttenteAdmin}">0</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/inscriptions/par-statut/VALIDE}"
+       th:classappend="${statutActif != null and statutActif.name() == 'VALIDE'} ? ' active'">Validées</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/inscriptions/par-statut/REJETE}"
+       th:classappend="${statutActif != null and statutActif.name() == 'REJETE'} ? ' active'">Rejetées</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/inscriptions/par-statut/EN_VALIDATION_DIRECTEUR}"
+       th:classappend="${statutActif != null and statutActif.name() == 'EN_VALIDATION_DIRECTEUR'} ? ' active'">
+      Att. directeur
+    </a>
+  </li>
+</ul>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Doctorant</th><th>Type</th><th>Année</th>
+          <th>Dépôt</th><th>Avis directeur</th><th>Statut</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="ins : ${inscriptions}">
+          <td>
+            <div class="fw-semibold" th:text="${ins.doctorant.nomComplet}">-</div>
+            <small class="text-muted font-monospace" th:text="${ins.doctorant.cne}">-</small>
+          </td>
+          <td>
+            <span th:class="${ins.type.name() == 'PREMIERE_INSCRIPTION'} ? 'badge bg-primary' : 'badge bg-secondary'"
+                  th:text="${ins.type.name() == 'PREMIERE_INSCRIPTION'} ? '1ère' : 'Réinscr.'">-</span>
+          </td>
+          <td class="fw-semibold" th:text="${ins.anneeUniversitaire}">-</td>
+          <td class="small" th:text="${#temporals.format(ins.dateDepot,'dd/MM/yyyy')}">-</td>
+          <td>
+            <span th:if="${ins.avisDirecteur != null}" class="text-success small">
+              <i class="bi bi-check-circle me-1"></i>
+              <span th:text="${#strings.abbreviate(ins.avisDirecteur,30)}"></span>
+            </span>
+            <span th:unless="${ins.avisDirecteur != null}" class="text-muted small">
+              <i class="bi bi-hourglass me-1"></i>En attente
+            </span>
+          </td>
+          <td>
+            <span th:class="'badge badge-' + ${ins.statut.name()}"
+                  th:text="${ins.statut.name().replace('_',' ')}">-</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a th:href="@{/admin/inscriptions/{id}(id=${ins.id})}"
+                 class="btn btn-sm btn-outline-primary" title="Voir le dossier">
+                <i class="bi bi-eye"></i>
+              </a>
+              <form th:if="${ins.statut.name() == 'EN_VALIDATION_ADMIN'}"
+                    th:action="@{/admin/inscriptions/{id}/valider(id=${ins.id})}" method="post" class="d-inline">
+                
+                <input type="hidden" name="commentaire" value="Dossier validé administrativement"/>
+                <button type="submit" class="btn btn-sm btn-success" title="Valider"
+                        onclick="return confirm('Valider cette inscription ?')">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+              </form>
+              <button th:if="${ins.statut.name() == 'EN_VALIDATION_ADMIN'}"
+                      class="btn btn-sm btn-danger" title="Rejeter"
+                      data-bs-toggle="modal" th:attr="data-bs-target='#modal-' + ${ins.id}">
+                <i class="bi bi-x-lg"></i>
+              </button>
+              <!-- Modal rejet -->
+              <div class="modal fade" th:id="'modal-' + ${ins.id}" tabindex="-1">
+                <div class="modal-dialog"><div class="modal-content">
+                  <form th:action="@{/admin/inscriptions/{id}/rejeter(id=${ins.id})}" method="post">
+                    
+                    <div class="modal-header">
+                      <h5 class="modal-title fw-bold">Rejeter le dossier</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="text-muted small mb-2">
+                        Dossier de <strong th:text="${ins.doctorant.nomComplet}"></strong>
+                        – Année <span th:text="${ins.anneeUniversitaire}"></span>
+                      </p>
+                      <label class="form-label fw-semibold">Motif du rejet *</label>
+                      <textarea name="motif" class="form-control" rows="3"
+                                placeholder="Expliquez clairement le motif du rejet…" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                      <button type="submit" class="btn btn-danger fw-semibold">
+                        <i class="bi bi-x-circle me-1"></i>Confirmer le rejet
+                      </button>
+                    </div>
+                  </form>
+                </div></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(inscriptions)}">
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+            <span th:if="${statutActif == null}">Aucune inscription en attente de validation.</span>
+            <span th:unless="${statutActif == null}" th:text="'Aucune inscription avec le statut '+ ${statutActif.name().replace('_',' ')} + '.'"  ></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

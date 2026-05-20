@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Détail publication – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Détail publication</h4>
+  <a th:href="@{/admin/publications}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="row g-3">
+  <div class="col-md-7">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-journal me-2"></i>Informations</span>
+        <span th:class="'badge badge-' + ${publication.statut.name()}"
+              th:text="${publication.statut.name()}"></span>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">Titre</td>
+              <td class="fw-bold" th:text="${publication.titre}">-</td></tr>
+          <tr><td class="text-muted small">Type</td>
+              <td th:text="${publication.type.name().replace('_',' ')}">-</td></tr>
+          <tr><td class="text-muted small">Quartile</td>
+              <td>
+                <span th:if="${publication.quartile != null}"
+                      th:class="'badge' + (${publication.quartile.name() == 'Q1' or publication.quartile.name() == 'Q2'} ? ' bg-success' : ' bg-secondary')"
+                      th:text="${publication.quartile.name()}">-</span>
+                <span th:unless="${publication.quartile != null}" class="text-muted">—</span>
+              </td></tr>
+          <tr><td class="text-muted small">Revue / Conf.</td>
+              <td th:text="${publication.revueOuConference ?: '—'}">-</td></tr>
+          <tr><td class="text-muted small">Date publication</td>
+              <td th:text="${publication.datePublication != null ? #temporals.format(publication.datePublication,'dd/MM/yyyy') : '—'}">-</td></tr>
+          <tr><td class="text-muted small">DOI</td>
+              <td th:text="${publication.doi ?: '—'}">-</td></tr>
+          <tr><td class="text-muted small">Doctorant</td>
+              <td class="fw-semibold" th:text="${publication.doctorant.nomComplet}">-</td></tr>
+        </table>
+      </div>
+    </div>
+    <div th:if="${publication.commentaireValidation != null}" class="card">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Commentaire de validation</div>
+        <div th:text="${publication.commentaireValidation}">-</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5" th:if="${publication.statut.name() == 'EN_ATTENTE'}">
+    <div class="card border-primary">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-shield-check me-2"></i>Décision
+      </div>
+      <div class="card-body">
+        <form th:action="@{/admin/publications/{id}/valider(id=${publication.id})}" method="post" class="mb-4">
+          
+          <label class="form-label fw-semibold">Commentaire</label>
+          <input type="text" name="commentaire" class="form-control mb-2"
+                 value="Publication validée"/>
+          <button type="submit" class="btn btn-success fw-semibold w-100"
+                  onclick="return confirm('Valider cette publication ?')">
+            <i class="bi bi-check-circle me-2"></i>Valider
+          </button>
+        </form>
+        <hr/>
+        <form th:action="@{/admin/publications/{id}/rejeter(id=${publication.id})}" method="post">
+          
+          <label class="form-label fw-semibold">Motif du rejet *</label>
+          <textarea name="motifRejet" class="form-control mb-2" rows="3"
+                    placeholder="Expliquez le motif…" required></textarea>
+          <button type="submit" class="btn btn-danger fw-semibold w-100"
+                  onclick="return confirm('Rejeter cette publication ?')">
+            <i class="bi bi-x-circle me-2"></i>Rejeter
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Dossier inscription')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Examen du dossier d'inscription</h4>
+  <a th:href="@{/directeur/inscriptions}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person me-2"></i>Doctorant</div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">Nom</td>
+              <td class="fw-bold" th:text="${inscription.doctorant.nomComplet}">-</td></tr>
+          <tr><td class="text-muted small">CNE</td>
+              <td th:text="${inscription.doctorant.cne}">-</td></tr>
+          <tr><td class="text-muted small">Email</td>
+              <td th:text="${inscription.doctorant.email}">-</td></tr>
+          <tr><td class="text-muted small">Type demande</td>
+              <td th:text="${inscription.type.name().replace('_',' ')}">-</td></tr>
+          <tr><td class="text-muted small">Année</td>
+              <td th:text="${inscription.anneeUniversitaire}">-</td></tr>
+          <tr><td class="text-muted small">Déposé le</td>
+              <td th:text="${#temporals.format(inscription.dateDepot,'dd/MM/yyyy')}">-</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Sujet de thèse</div>
+        <div th:text="${inscription.doctorant.sujetThese}">-</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-chat-square-text me-2"></i>Donner votre avis
+      </div>
+      <div class="card-body">
+        <form th:action="@{/directeur/inscriptions/{id}/avis(id=${inscription.id})}" method="post">
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Votre avis sur le dossier *</label>
+            <textarea name="avis" class="form-control" rows="4" required
+                      placeholder="Évaluez la qualité du dossier, l'avancement du doctorant, la pertinence du sujet…"></textarea>
+          </div>
+          <div class="alert alert-warning small">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Votre avis sera transmis à l'administration pour la validation finale.
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success fw-semibold">
+              <i class="bi bi-check-lg me-2"></i>Soumettre mon avis favorable
+            </button>
+            <a th:href="@{/directeur/inscriptions}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Doctorants')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>Doctorants</h4>
+  <div class="d-flex gap-2">
+    <a th:href="@{/admin/doctorants/alertes}" class="btn btn-danger btn-sm">
+      <i class="bi bi-exclamation-triangle me-1"></i>Alertes durée
+    </a>
+  </div>
+</div>
+
+<!-- Filtres par statut -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <span class="text-muted small fw-semibold">Filtrer :</span>
+      <a th:href="@{/admin/doctorants}" class="btn btn-sm btn-outline-secondary">Tous</a>
+      <a th:each="s : ${statuts}"
+         th:href="@{/admin/doctorants/par-statut/{s}(s=${s.name()})}"
+         th:text="${s.name().replace('_',' ')}"
+         th:class="'btn btn-sm' + (${s == statutActif} ? ' btn-primary' : ' btn-outline-primary')">-</a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nom</th><th>CNE</th><th>Sujet</th>
+          <th>Directeur</th><th>Année</th><th>Statut</th><th>Prérequis</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="d : ${doctorants}"
+            th:classappend="${d.nombreAnnees >= 5} ? 'table-warning' : ''">
+          <td>
+            <div class="fw-semibold" th:text="${d.nomComplet}">-</div>
+            <small class="text-muted" th:text="${d.email}">-</small>
+          </td>
+          <td class="small font-monospace" th:text="${d.cne}">-</td>
+          <td class="small" th:text="${#strings.abbreviate(d.sujetThese,40)}">-</td>
+          <td class="small" th:text="${d.directeur != null ? d.directeur.nomComplet : '—'}">-</td>
+          <td>
+            <span class="badge bg-light text-dark border" th:text="'A' + ${d.anneeEncours}">A1</span>
+            <i class="bi bi-exclamation-triangle text-danger ms-1" th:if="${d.nombreAnnees >= 6}"></i>
+            <i class="bi bi-exclamation-triangle text-warning ms-1" th:if="${d.nombreAnnees >= 5 and d.nombreAnnees < 6}"></i>
+          </td>
+          <td>
+            <span th:class="'badge badge-' + ${d.statut.name()}"
+                  th:text="${d.statut.name().replace('_',' ')}">-</span>
+          </td>
+          <td class="text-center">
+            <i class="bi bi-check-circle-fill text-success fs-5"
+               th:if="${d.nbArticlesQ1Q2 >= 2 and d.nbConferences >= 2 and d.totalHeuresFormation >= 200}"></i>
+            <i class="bi bi-x-circle text-muted fs-5"
+               th:unless="${d.nbArticlesQ1Q2 >= 2 and d.nbConferences >= 2 and d.totalHeuresFormation >= 200}"></i>
+          </td>
+          <td>
+            <a th:href="@{/admin/doctorants/{id}(id=${d.id})}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(doctorants)}">
+          <td colspan="8" class="text-center text-muted py-5">Aucun doctorant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

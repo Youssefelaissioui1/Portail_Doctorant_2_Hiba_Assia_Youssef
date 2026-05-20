@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Ma soutenance')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-award me-2 text-primary"></i>Espace soutenance</h4>
+</div>
+
+<!-- Prérequis non remplis -->
+<div th:unless="${prerequisOk}" class="card border-warning mb-4">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-lock-fill text-warning" style="font-size:3rem"></i>
+    <h5 class="mt-3 fw-bold">Prérequis non satisfaits</h5>
+    <p class="text-muted">Vous devez remplir tous les prérequis avant de soumettre une demande de soutenance.</p>
+    <a th:href="@{/doctorant/progression}" class="btn btn-warning fw-semibold">
+      <i class="bi bi-graph-up me-2"></i>Voir ma progression
+    </a>
+  </div>
+</div>
+
+<!-- Pas encore de demande -->
+<div th:if="${prerequisOk and soutenance == null}" class="card border-success mb-4">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-mortarboard-fill text-success" style="font-size:3rem"></i>
+    <h5 class="mt-3 fw-bold text-success">Vous êtes éligible à soutenir !</h5>
+    <p class="text-muted mb-4">Tous vos prérequis sont satisfaits. Créez votre demande de soutenance.</p>
+    <form th:action="@{/soutenance/creer}" method="post" class="d-inline">
+      
+      <button type="submit" class="btn btn-success btn-lg fw-semibold">
+        <i class="bi bi-send me-2"></i>Créer ma demande de soutenance
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Demande existante -->
+<div th:if="${soutenance != null}">
+  <!-- Statut timeline -->
+  <div class="card mb-4">
+    <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-diagram-3 me-2"></i>Avancement de votre dossier</span>
+      <span th:class="'badge badge-' + ${soutenance.statut.name()}"
+            th:text="${soutenance.statut.name().replace('_',' ')}">-</span>
+    </div>
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-0 flex-wrap">
+        <!-- Étape 1 : Brouillon -->
+        <div class="text-center px-3 py-2">
+          <div th:class="'rounded-circle mx-auto d-flex align-items-center justify-content-center mb-1' +
+              (${soutenance.statut.name() != 'BROUILLON'} ? ' bg-success text-white' : ' bg-warning text-dark')"
+               style="width:40px;height:40px;font-weight:700;">1</div>
+          <small class="d-block text-muted">Brouillon</small>
+        </div>
+        <div class="flex-grow-1 border-top border-2 border-secondary opacity-25" style="height:1px;min-width:20px;"></div>
+        <!-- Étape 2 : Soumis -->
+        <div class="text-center px-3 py-2">
+          <div th:class="'rounded-circle mx-auto d-flex align-items-center justify-content-center mb-1' +
+              (${soutenance.statut.name() == 'SOUMISE' or soutenance.statut.name() == 'RAPPORTS_EN_ATTENTE' or soutenance.statut.name() == 'RAPPORTS_RECUS' or soutenance.statut.name() == 'AUTORISEE' or soutenance.statut.name() == 'PLANIFIEE' or soutenance.statut.name() == 'REALISEE'} ? ' bg-success text-white' : ' bg-light text-muted border')"
+               style="width:40px;height:40px;font-weight:700;">2</div>
+          <small class="d-block text-muted">Soumis</small>
+        </div>
+        <div class="flex-grow-1 border-top border-2 border-secondary opacity-25" style="height:1px;min-width:20px;"></div>
+        <!-- Étape 3 : Autorisé -->
+        <div class="text-center px-3 py-2">
+          <div th:class="'rounded-circle mx-auto d-flex align-items-center justify-content-center mb-1' +
+              (${soutenance.statut.name() == 'AUTORISEE' or soutenance.statut.name() == 'PLANIFIEE' or soutenance.statut.name() == 'REALISEE'} ? ' bg-success text-white' : ' bg-light text-muted border')"
+               style="width:40px;height:40px;font-weight:700;">3</div>
+          <small class="d-block text-muted">Autorisé</small>
+        </div>
+        <div class="flex-grow-1 border-top border-2 border-secondary opacity-25" style="height:1px;min-width:20px;"></div>
+        <!-- Étape 4 : Planifié -->
+        <div class="text-center px-3 py-2">
+          <div th:class="'rounded-circle mx-auto d-flex align-items-center justify-content-center mb-1' +
+              (${soutenance.statut.name() == 'PLANIFIEE' or soutenance.statut.name() == 'REALISEE'} ? ' bg-success text-white' : ' bg-light text-muted border')"
+               style="width:40px;height:40px;font-weight:700;">4</div>
+          <small class="d-block text-muted">Planifié</small>
+        </div>
+        <div class="flex-grow-1 border-top border-2 border-secondary opacity-25" style="height:1px;min-width:20px;"></div>
+        <!-- Étape 5 : Réalisé -->
+        <div class="text-center px-3 py-2">
+          <div th:class="'rounded-circle mx-auto d-flex align-items-center justify-content-center mb-1' +
+              (${soutenance.statut.name() == 'REALISEE'} ? ' bg-success text-white' : ' bg-light text-muted border')"
+               style="width:40px;height:40px;font-weight:700;">5</div>
+          <small class="d-block text-muted">Réalisé</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Infos soutenance -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header bg-white fw-semibold"><i class="bi bi-info-circle me-2"></i>Informations</div>
+        <div class="card-body">
+          <table class="table table-sm table-borderless mb-0">
+            <tr>
+              <td class="text-muted small">Date demande</td>
+              <td th:text="${#temporals.format(soutenance.dateDemande,'dd/MM/yyyy')}">-</td>
+            </tr>
+            <tr th:if="${soutenance.datePlanifiee != null}">
+              <td class="text-muted small">Date soutenance</td>
+              <td class="fw-bold text-success"
+                  th:text="${#temporals.format(soutenance.datePlanifiee,'EEEE dd MMMM yyyy')} + ' à ' + ${soutenance.heurePlanifiee}">-</td>
+            </tr>
+            <tr th:if="${soutenance.lieu != null}">
+              <td class="text-muted small">Lieu</td>
+              <td th:text="${soutenance.lieu}">-</td>
+            </tr>
+            <tr th:if="${soutenance.commentaireAutorisation != null}">
+              <td class="text-muted small">Commentaire admin</td>
+              <td th:text="${soutenance.commentaireAutorisation}">-</td>
+            </tr>
+          </table>
+
+          <!-- Action soumettre si brouillon -->
+          <div th:if="${soutenance.statut.name() == 'BROUILLON'}" class="mt-3">
+            <form th:action="@{/soutenance/{id}/soumettre(id=${soutenance.id})}" method="post">
+              
+              <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                <i class="bi bi-send me-2"></i>Soumettre la demande
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membres du jury -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header bg-white fw-semibold"><i class="bi bi-people me-2"></i>Jury proposé</div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li th:each="m : ${soutenance.membresJury}" class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold small" th:text="${m.nomComplet}">-</div>
+                  <small class="text-muted" th:text="${m.etablissement}">-</small>
+                </div>
+                <span class="badge bg-secondary" th:text="${m.qualite.name()}">-</span>
+              </div>
+            </li>
+            <li th:if="${#lists.isEmpty(soutenance.membresJury)}" class="list-group-item text-muted text-center py-3">
+              <i class="bi bi-people d-block mb-1"></i>
+              En attente de proposition du directeur de thèse
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

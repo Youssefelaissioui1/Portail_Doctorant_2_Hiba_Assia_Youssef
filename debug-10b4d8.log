@@ -1,0 +1,5 @@
+{"sessionId":"10b4d8","hypothesisId":"A","location":"PortailDeSuiviDuDoctoratApplication.java:run","message":"startup user count","data":{"utilisateurCount":7},"timestamp":1778881399905}
+{"sessionId":"10b4d8","hypothesisId":"B","location":"CustomUserDetailsServiceImpl.java:loadUserByUsername","message":"loadUserByUsername called","data":{"email":"admin@doctorat.ma","emailBlank":false},"timestamp":1778881449646}
+{"sessionId":"10b4d8","hypothesisId":"C","location":"CustomUserDetailsServiceImpl.java:success","message":"user found for login","data":{"email":"admin@doctorat.ma","role":"ROLE_PERSONNEL_ADMIN"},"timestamp":1778881449793}
+{"sessionId":"10b4d8","hypothesisId":"B","location":"CustomUserDetailsServiceImpl.java:loadUserByUsername","message":"loadUserByUsername called","data":{"email":"admin@doctorat.ma","emailBlank":false},"timestamp":1778881508964}
+{"sessionId":"10b4d8","hypothesisId":"C","location":"CustomUserDetailsServiceImpl.java:success","message":"user found for login","data":{"email":"admin@doctorat.ma","role":"ROLE_PERSONNEL_ADMIN"},"timestamp":1778881508990}

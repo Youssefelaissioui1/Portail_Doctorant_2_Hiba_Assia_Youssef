@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Détail campagne')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0">
+    <i class="bi bi-calendar-event me-2 text-primary"></i>
+    Campagne <span th:text="${campagne.anneeUniversitaire}"></span>
+  </h4>
+  <div class="d-flex gap-2">
+    <span th:class="${campagne.active} ? 'badge bg-success fs-6' : 'badge bg-secondary fs-6'"
+          th:text="${campagne.active} ? 'Active' : 'Inactive'"></span>
+    <a th:href="@{/admin/campagnes}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Infos campagne -->
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-info-circle me-2"></i>Informations
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr>
+            <td class="text-muted small">Année</td>
+            <td class="fw-bold fs-5" th:text="${campagne.anneeUniversitaire}">-</td>
+          </tr>
+          <tr>
+            <td class="text-muted small">Description</td>
+            <td th:text="${campagne.description ?: '—'}">-</td>
+          </tr>
+          <tr>
+            <td class="text-muted small">Ouverture</td>
+            <td class="text-success fw-semibold"
+                th:text="${#temporals.format(campagne.dateOuverture,'dd MMMM yyyy')}">-</td>
+          </tr>
+          <tr>
+            <td class="text-muted small">Fermeture</td>
+            <td class="text-danger fw-semibold"
+                th:text="${#temporals.format(campagne.dateFermeture,'dd MMMM yyyy')}">-</td>
+          </tr>
+          <tr>
+            <td class="text-muted small">Statut</td>
+            <td>
+              <span th:if="${campagne.active}" class="badge bg-success">
+                <i class="bi bi-circle-fill me-1" style="font-size:.5rem;"></i>Active
+              </span>
+              <span th:unless="${campagne.active}" class="badge bg-secondary">Inactive</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted small">Inscriptions</td>
+            <td class="fw-bold" th:text="${#lists.size(campagne.inscriptions)} + ' dossier(s)'">0</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-sliders me-2"></i>Actions
+      </div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a th:href="@{/admin/campagnes/{id}/modifier(id=${campagne.id})}"
+           class="btn btn-outline-secondary">
+          <i class="bi bi-pencil me-2"></i>Modifier les dates
+        </a>
+        <form th:unless="${campagne.active}"
+              th:action="@{/admin/campagnes/{id}/activer(id=${campagne.id})}" method="post">
+          
+          <button type="submit" class="btn btn-success w-100"
+                  onclick="return confirm('Activer cette campagne ?')">
+            <i class="bi bi-toggle-on me-2"></i>Activer la campagne
+          </button>
+        </form>
+        <form th:if="${campagne.active}"
+              th:action="@{/admin/campagnes/{id}/desactiver(id=${campagne.id})}" method="post">
+          
+          <button type="submit" class="btn btn-warning w-100"
+                  onclick="return confirm('Désactiver cette campagne ?')">
+            <i class="bi bi-toggle-off me-2"></i>Désactiver
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des inscriptions liées -->
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-files me-2"></i>Inscriptions de cette campagne</span>
+        <span class="badge bg-secondary" th:text="${#lists.size(campagne.inscriptions)}">0</span>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Doctorant</th><th>Type</th><th>Dépôt</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="ins : ${campagne.inscriptions}">
+              <td class="fw-semibold small" th:text="${ins.doctorant.nomComplet}">-</td>
+              <td>
+                <span th:class="${ins.type.name() == 'PREMIERE_INSCRIPTION'} ? 'badge bg-primary' : 'badge bg-secondary'"
+                      th:text="${ins.type.name() == 'PREMIERE_INSCRIPTION'} ? '1ère' : 'Réinscr.'">-</span>
+              </td>
+              <td class="small" th:text="${#temporals.format(ins.dateDepot,'dd/MM/yyyy')}">-</td>
+              <td>
+                <span th:class="'badge badge-' + ${ins.statut.name()}"
+                      th:text="${ins.statut.name().replace('_',' ')}">-</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(campagne.inscriptions)}">
+              <td colspan="4" class="text-center text-muted py-3">
+                Aucune inscription pour cette campagne.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

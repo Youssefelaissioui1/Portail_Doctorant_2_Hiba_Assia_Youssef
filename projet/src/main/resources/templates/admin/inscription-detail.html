@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Dossier inscription – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Dossier d'inscription</h4>
+  <a th:href="@{/admin/inscriptions}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person me-2"></i>Doctorant</div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">Nom complet</td>
+              <td class="fw-bold" th:text="${inscription.doctorant.nomComplet}">-</td></tr>
+          <tr><td class="text-muted small">CNE</td>
+              <td class="font-monospace" th:text="${inscription.doctorant.cne}">-</td></tr>
+          <tr><td class="text-muted small">Email</td>
+              <td th:text="${inscription.doctorant.email}">-</td></tr>
+          <tr><td class="text-muted small">Directeur</td>
+              <td th:text="${inscription.doctorant.directeur != null ? inscription.doctorant.directeur.nomComplet : '—'}">-</td></tr>
+          <tr><td class="text-muted small">Type</td>
+              <td th:text="${inscription.type.name().replace('_',' ')}">-</td></tr>
+          <tr><td class="text-muted small">Année</td>
+              <td th:text="${inscription.anneeUniversitaire}">-</td></tr>
+          <tr><td class="text-muted small">Déposé le</td>
+              <td th:text="${#temporals.format(inscription.dateDepot,'dd/MM/yyyy')}">-</td></tr>
+          <tr><td class="text-muted small">Statut</td>
+              <td><span th:class="'badge badge-' + ${inscription.statut.name()}"
+                        th:text="${inscription.statut.name().replace('_',' ')}"></span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Sujet de thèse</div>
+        <div th:text="${inscription.doctorant.sujetThese}">-</div>
+      </div>
+    </div>
+
+    <div class="card" th:if="${inscription.avisDirecteur != null}">
+      <div class="card-header bg-success bg-opacity-10 text-success fw-semibold small">
+        <i class="bi bi-chat-quote me-2"></i>Avis du directeur de thèse
+      </div>
+      <div class="card-body">
+        <p class="mb-1 small" th:text="${inscription.avisDirecteur}">-</p>
+        <small class="text-muted"
+               th:text="'Le ' + ${inscription.dateAvisDirecteur != null ? #temporals.format(inscription.dateAvisDirecteur,'dd/MM/yyyy') : '—'}">-</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <!-- Actions admin -->
+    <div class="card mb-3" th:if="${inscription.statut.name() == 'EN_VALIDATION_ADMIN'}">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-shield-check me-2"></i>Décision administrative
+      </div>
+      <div class="card-body">
+        <!-- Valider -->
+        <form th:action="@{/admin/inscriptions/{id}/valider(id=${inscription.id})}" method="post" class="mb-3">
+          
+          <label class="form-label fw-semibold">Commentaire de validation</label>
+          <input type="text" name="commentaire" class="form-control mb-2"
+                 placeholder="Ex : Dossier complet, validé administrativement"
+                 value="Dossier complet, validé administrativement"/>
+          <button type="submit" class="btn btn-success fw-semibold w-100"
+                  onclick="return confirm('Valider définitivement ce dossier ?')">
+            <i class="bi bi-check-circle me-2"></i>Valider l'inscription
+          </button>
+        </form>
+        <hr/>
+        <!-- Rejeter -->
+        <form th:action="@{/admin/inscriptions/{id}/rejeter(id=${inscription.id})}" method="post">
+          
+          <label class="form-label fw-semibold">Motif du rejet *</label>
+          <textarea name="motifRejet" class="form-control mb-2" rows="3"
+                    placeholder="Expliquez clairement le motif du rejet…" required></textarea>
+          <button type="submit" class="btn btn-danger fw-semibold w-100"
+                  onclick="return confirm('Rejeter ce dossier ? Cette action est définitive.')">
+            <i class="bi bi-x-circle me-2"></i>Rejeter le dossier
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Résultat déjà traité -->
+    <div th:unless="${inscription.statut.name() == 'EN_VALIDATION_ADMIN'}" class="card mb-3">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-check2-all me-2"></i>Décision</div>
+      <div class="card-body">
+        <div th:if="${inscription.statut.name() == 'VALIDE'}" class="alert alert-success mb-2">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Validé</strong> le
+          <span th:text="${inscription.dateValidationAdmin != null ? #temporals.format(inscription.dateValidationAdmin,'dd/MM/yyyy') : '—'}"></span>
+          <div class="small mt-1" th:text="${inscription.commentaireAdmin}"></div>
+        </div>
+        <div th:if="${inscription.statut.name() == 'REJETE'}" class="alert alert-danger mb-2">
+          <i class="bi bi-x-circle-fill me-2"></i>
+          <strong>Rejeté</strong> – <span th:text="${inscription.motifRejet}"></span>
+        </div>
+        <div th:if="${inscription.statut.name() == 'EN_VALIDATION_DIRECTEUR'}" class="alert alert-info mb-0">
+          <i class="bi bi-hourglass-split me-2"></i>En attente de l'avis du directeur de thèse.
+        </div>
+      </div>
+    </div>
+
+    <!-- Circuit de validation visuel -->
+    <div class="card">
+      <div class="card-header bg-white fw-semibold small"><i class="bi bi-diagram-3 me-2"></i>Circuit de validation</div>
+      <div class="card-body">
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width:34px;height:34px;font-weight:700;">1</div>
+          <div>
+            <div class="fw-semibold small">Soumission par le doctorant</div>
+            <small class="text-muted" th:text="${#temporals.format(inscription.dateDepot,'dd/MM/yyyy')}"></small>
+          </div>
+          <i class="bi bi-check-circle-fill text-success ms-auto mt-1"></i>
+        </div>
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div th:class="'rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0' +
+              (${inscription.avisDirecteur != null} ? ' bg-success' : ' bg-secondary')"
+               style="width:34px;height:34px;font-weight:700;">2</div>
+          <div>
+            <div class="fw-semibold small">Avis du directeur de thèse</div>
+            <small class="text-muted"
+                   th:text="${inscription.avisDirecteur != null ? inscription.avisDirecteur : 'En attente…'}"></small>
+          </div>
+          <i class="bi bi-check-circle-fill text-success ms-auto mt-1" th:if="${inscription.avisDirecteur != null}"></i>
+        </div>
+        <div class="d-flex align-items-start gap-3">
+          <div th:class="'rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0' +
+              (${inscription.statut.name() == 'VALIDE'} ? ' bg-success' :
+               ${inscription.statut.name() == 'REJETE'} ? ' bg-danger' : ' bg-secondary')"
+               style="width:34px;height:34px;font-weight:700;">3</div>
+          <div>
+            <div class="fw-semibold small">Validation administrative</div>
+            <small class="text-muted"
+                   th:text="${inscription.statut.name() == 'VALIDE'} ? 'Validé' :
+                             ${inscription.statut.name() == 'REJETE'} ? 'Rejeté' : 'En attente…'"></small>
+          </div>
+          <i th:if="${inscription.statut.name() == 'VALIDE'}"
+             class="bi bi-check-circle-fill text-success ms-auto mt-1"></i>
+          <i th:if="${inscription.statut.name() == 'REJETE'}"
+             class="bi bi-x-circle-fill text-danger ms-auto mt-1"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

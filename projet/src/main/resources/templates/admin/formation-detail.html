@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Détail formation – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-mortarboard me-2 text-primary"></i>Détail formation</h4>
+  <a th:href="@{/admin/formations}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="row g-3">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-mortarboard me-2"></i>Informations</span>
+        <span th:if="${formation.validee}" class="badge badge-VALIDE">Validée</span>
+        <span th:unless="${formation.validee}" class="badge badge-EN_ATTENTE">En attente</span>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">Intitulé</td>
+              <td class="fw-bold" th:text="${formation.intitule}">-</td></tr>
+          <tr><td class="text-muted small">Heures</td>
+              <td><span class="badge bg-primary" th:text="${formation.heures} + 'h'">0h</span></td></tr>
+          <tr><td class="text-muted small">Date</td>
+              <td th:text="${formation.dateFormation != null ? #temporals.format(formation.dateFormation,'dd/MM/yyyy') : '—'}">-</td></tr>
+          <tr><td class="text-muted small">Organisateur</td>
+              <td th:text="${formation.organisateur ?: '—'}">-</td></tr>
+          <tr><td class="text-muted small">Doctorant</td>
+              <td class="fw-semibold" th:text="${formation.doctorant.nomComplet}">-</td></tr>
+          <tr th:if="${formation.dateValidation != null}">
+              <td class="text-muted small">Validée le</td>
+              <td class="text-success fw-semibold"
+                  th:text="${#temporals.format(formation.dateValidation,'dd/MM/yyyy')}">-</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5" th:unless="${formation.validee}">
+    <div class="card border-primary">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-shield-check me-2"></i>Décision
+      </div>
+      <div class="card-body">
+        <form th:action="@{/admin/formations/{id}/valider(id=${formation.id})}" method="post" class="mb-3">
+          
+          <button type="submit" class="btn btn-success fw-semibold w-100"
+                  onclick="return confirm('Valider cette formation ?')">
+            <i class="bi bi-check-circle me-2"></i>Valider la formation
+          </button>
+        </form>
+        <form th:action="@{/admin/formations/{id}/rejeter(id=${formation.id})}" method="post">
+          
+          <button type="submit" class="btn btn-danger fw-semibold w-100"
+                  onclick="return confirm('Rejeter cette formation ?')">
+            <i class="bi bi-x-circle me-2"></i>Rejeter la formation
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

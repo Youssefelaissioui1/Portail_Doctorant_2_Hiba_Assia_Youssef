@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Soutenances – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-0"><i class="bi bi-mortarboard me-2 text-primary"></i>Gestion des soutenances</h4>
+    <p class="text-muted small mb-0">Autorisez et planifiez les soutenances de thèse.</p>
+  </div>
+</div>
+
+<!-- Stats rapides -->
+<div class="row g-3 mb-4">
+  <div class="col-md-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-2 fw-bold text-secondary" th:text="${nbBrouillon}">0</div>
+      <div class="small text-muted">Brouillon</div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card stat-card orange text-center p-3">
+      <div class="fs-2 fw-bold text-warning" th:text="${nbSoumises}">0</div>
+      <div class="small text-muted">Soumises</div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card stat-card purple text-center p-3">
+      <div class="fs-2 fw-bold" style="color:#8b5cf6;" th:text="${nbRapportsRecus}">0</div>
+      <div class="small text-muted">Rapports reçus</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card green text-center p-3">
+      <div class="fs-2 fw-bold text-success" th:text="${nbAutorisees}">0</div>
+      <div class="small text-muted">Autorisées</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-2 fw-bold text-primary" th:text="${nbPlanifiees}">0</div>
+      <div class="small text-muted">Planifiées</div>
+    </div>
+  </div>
+</div>
+
+<!-- Onglets filtre -->
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link" th:classappend="${statutActif == null} ? ' active'"
+       th:href="@{/admin/soutenances}">En cours
+      <span class="badge bg-primary ms-1"
+            th:text="${(nbSoumises ?: 0) + (nbRapportsRecus ?: 0)}">0</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/soutenances/par-statut/SOUMISE}"
+       th:classappend="${statutActif != null and statutActif.name() == 'SOUMISE'} ? ' active'">
+      Soumises <span class="badge bg-warning text-dark ms-1" th:text="${nbSoumises}">0</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/soutenances/par-statut/RAPPORTS_RECUS}"
+       th:classappend="${statutActif != null and statutActif.name() == 'RAPPORTS_RECUS'} ? ' active'">
+      Rapports reçus
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/soutenances/par-statut/AUTORISEE}"
+       th:classappend="${statutActif != null and statutActif.name() == 'AUTORISEE'} ? ' active'">
+      Autorisées <span class="badge bg-success ms-1" th:text="${nbAutorisees}">0</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" th:href="@{/admin/soutenances/par-statut/PLANIFIEE}"
+       th:classappend="${statutActif != null and statutActif.name() == 'PLANIFIEE'} ? ' active'">
+      Planifiées
+    </a>
+  </li>
+</ul>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Doctorant</th><th>Sujet</th><th>Demande le</th>
+          <th>Date prévue</th><th>Statut</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="s : ${soutenances}">
+          <td>
+            <div class="fw-semibold" th:text="${s.doctorant.nomComplet}">-</div>
+            <small class="text-muted" th:text="${s.doctorant.email}">-</small>
+          </td>
+          <td class="small" style="max-width:200px;"
+              th:text="${#strings.abbreviate(s.doctorant.sujetThese,45)}">-</td>
+          <td class="small" th:text="${#temporals.format(s.dateDemande,'dd/MM/yyyy')}">-</td>
+          <td class="small">
+            <span th:if="${s.datePlanifiee != null}" class="text-success fw-semibold"
+                  th:text="${#temporals.format(s.datePlanifiee,'dd/MM/yyyy')}">-</span>
+            <span th:unless="${s.datePlanifiee != null}" class="text-muted">—</span>
+          </td>
+          <td>
+            <span th:class="'badge badge-' + ${s.statut.name()}"
+                  th:text="${s.statut.name().replace('_',' ')}">-</span>
+          </td>
+          <td>
+            <a th:href="@{/admin/soutenances/{id}(id=${s.id})}"
+               class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(soutenances)}">
+          <td colspan="6" class="text-center text-muted py-5">
+            <i class="bi bi-mortarboard fs-2 d-block mb-2"></i>Aucune soutenance dans cette catégorie.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

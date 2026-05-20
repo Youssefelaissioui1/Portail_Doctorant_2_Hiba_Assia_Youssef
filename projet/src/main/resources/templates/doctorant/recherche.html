@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Recherche par CNE')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<h4 class="fw-bold mb-4"><i class="bi bi-search me-2 text-primary"></i>Recherche par CNE</h4>
+<div class="card mb-4">
+  <div class="card-body">
+    <form th:action="@{/doctorant/recherche}" method="get" class="d-flex gap-2">
+      <input type="text" name="cne" class="form-control" placeholder="Numéro CNE"
+             th:value="${cneRecherche}" required/>
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-search"></i>
+      </button>
+    </form>
+  </div>
+</div>
+<div th:if="${resultat != null}" class="card">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-person-check me-2 text-success"></i>Résultat
+  </div>
+  <div class="card-body">
+    <table class="table table-sm table-borderless mb-3">
+      <tr><td class="text-muted">Nom</td><td class="fw-semibold" th:text="${resultat.nomComplet}"></td></tr>
+      <tr><td class="text-muted">Email</td><td th:text="${resultat.email}"></td></tr>
+      <tr><td class="text-muted">Sujet</td><td th:text="${resultat.sujetThese}"></td></tr>
+      <tr><td class="text-muted">Statut</td>
+          <td><span th:class="'badge badge-' + ${resultat.statut.name()}"
+                    th:text="${resultat.statut.name().replace('_',' ')}"></span></td></tr>
+    </table>
+    <a th:href="@{/doctorant/profil/{id}(id=${resultat.id})}" class="btn btn-primary btn-sm">
+      <i class="bi bi-eye me-1"></i>Voir la fiche complète
+    </a>
+  </div>
+</div>
+<div th:if="${resultat == null and cneRecherche != null}" class="alert alert-warning">
+  <i class="bi bi-exclamation-circle me-2"></i>Aucun doctorant trouvé pour le CNE :
+  <strong th:text="${cneRecherche}"></strong>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

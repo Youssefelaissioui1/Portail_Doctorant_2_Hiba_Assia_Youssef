@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Nouvelle publication')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-journal-plus me-2 text-primary"></i>Déclarer une publication</h4>
+  <a th:href="@{/publications}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="card">
+  <div class="card-body">
+    <div class="alert alert-info small mb-4">
+      <i class="bi bi-info-circle me-2"></i>
+      Les publications seront validées par l'administration avant d'être comptabilisées dans vos prérequis.
+      <strong>Articles Q1/Q2 requis : 2 · Conférences requises : 2</strong>
+    </div>
+    <form th:action="@{/publications}" th:object="${publication}" method="post">
+      
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-semibold">Titre de la publication *</label>
+          <input type="text" th:field="*{titre}" class="form-control" required
+                 placeholder="Titre complet de l'article ou communication"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Type *</label>
+          <select th:field="*{type}" class="form-select" required>
+            <option value="">-- Sélectionner --</option>
+            <option th:each="t : ${types}" th:value="${t}" th:text="${t.name().replace('_',' ')}"></option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Quartile (pour articles journal)</label>
+          <select th:field="*{quartile}" class="form-select">
+            <option value="">-- Aucun / Non classé --</option>
+            <option th:each="q : ${quartiles}" th:value="${q}" th:text="${q.name()}"></option>
+          </select>
+        </div>
+        <div class="col-md-8">
+          <label class="form-label fw-semibold">Revue / Conférence</label>
+          <input type="text" th:field="*{revueOuConference}" class="form-control"
+                 placeholder="Nom de la revue ou de la conférence"/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Date de publication</label>
+          <input type="date" th:field="*{datePublication}" class="form-control"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">DOI (optionnel)</label>
+          <input type="text" th:field="*{doi}" class="form-control" placeholder="10.xxxx/xxxxx"/>
+        </div>
+        <div class="col-12 d-flex gap-2 pt-2">
+          <button type="submit" class="btn btn-primary fw-semibold">
+            <i class="bi bi-send me-2"></i>Soumettre pour validation
+          </button>
+          <a th:href="@{/publications}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

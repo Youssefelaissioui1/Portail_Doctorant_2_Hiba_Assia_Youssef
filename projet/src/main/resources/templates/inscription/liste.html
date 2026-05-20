@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Mes inscriptions')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Mes inscriptions</h4>
+  <a th:href="@{/inscriptions/nouvelle}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>Nouvelle inscription
+  </a>
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Année</th><th>Type</th><th>Date dépôt</th><th>Statut</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="ins : ${inscriptions}">
+          <td class="fw-semibold" th:text="${ins.anneeUniversitaire}">-</td>
+          <td>
+            <span th:class="${ins.type.name() == 'PREMIERE_INSCRIPTION'} ? 'badge bg-primary' : 'badge bg-secondary'"
+                  th:text="${ins.type.name() == 'PREMIERE_INSCRIPTION'} ? '1ère inscription' : 'Réinscription'"></span>
+          </td>
+          <td th:text="${#temporals.format(ins.dateDepot,'dd/MM/yyyy')}">-</td>
+          <td><span th:class="'badge badge-' + ${ins.statut.name()}"
+                    th:text="${ins.statut.name().replace('_',' ')}">-</span></td>
+          <td>
+            <a th:href="@{/inscriptions/{id}(id=${ins.id})}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(inscriptions)}">
+          <td colspan="5" class="text-center text-muted py-4">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>Aucune inscription.
+            <a th:href="@{/inscriptions/nouvelle}" class="d-block mt-2">Faire ma première inscription</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

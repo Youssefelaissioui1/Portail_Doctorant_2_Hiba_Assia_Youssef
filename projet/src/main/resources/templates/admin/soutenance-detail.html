@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Détail soutenance – Admin')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0">
+    <i class="bi bi-mortarboard me-2 text-primary"></i>
+    Soutenance – <span th:text="${soutenance.doctorant.nomComplet}"></span>
+  </h4>
+  <div class="d-flex gap-2 align-items-center">
+    <span th:class="'badge fs-6 badge-' + ${soutenance.statut.name()}"
+          th:text="${soutenance.statut.name().replace('_',' ')}"></span>
+    <a th:href="@{/admin/soutenances}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Colonne gauche : infos + actions -->
+  <div class="col-md-4">
+    <!-- Infos doctorant -->
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold small">
+        <i class="bi bi-person me-2"></i>Doctorant
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">Nom</td>
+              <td class="fw-bold" th:text="${soutenance.doctorant.nomComplet}">-</td></tr>
+          <tr><td class="text-muted small">CNE</td>
+              <td class="font-monospace small" th:text="${soutenance.doctorant.cne}">-</td></tr>
+          <tr><td class="text-muted small">Directeur</td>
+              <td th:text="${soutenance.doctorant.directeur != null ? soutenance.doctorant.directeur.nomComplet : '—'}">-</td></tr>
+          <tr><td class="text-muted small">Demande le</td>
+              <td th:text="${#temporals.format(soutenance.dateDemande,'dd/MM/yyyy')}">-</td></tr>
+          <tr th:if="${soutenance.datePlanifiee != null}">
+              <td class="text-muted small">Date prévue</td>
+              <td class="text-success fw-bold"
+                  th:text="${#temporals.format(soutenance.datePlanifiee,'dd MMMM yyyy')} + ' à ' + ${soutenance.heurePlanifiee}">-</td></tr>
+          <tr th:if="${soutenance.lieu != null}">
+              <td class="text-muted small">Lieu</td>
+              <td th:text="${soutenance.lieu}">-</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Prérequis -->
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold small">
+        <i class="bi bi-check2-all me-2"></i>Prérequis vérifiés
+      </div>
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small">Publications</span>
+          <i th:class="${soutenance.publisSatisfaits} ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle text-danger'"></i>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small">Formation (200h)</span>
+          <i th:class="${soutenance.formationSatisfaite} ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle text-danger'"></i>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="small">Documents complets</span>
+          <i th:class="${soutenance.documentsComplets} ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle text-danger'"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions admin -->
+    <div class="card border-primary">
+      <div class="card-header bg-primary text-white fw-semibold small">
+        <i class="bi bi-shield-check me-2"></i>Actions administratives
+      </div>
+      <div class="card-body">
+        <!-- Autoriser -->
+        <div th:if="${soutenance.statut.name() == 'SOUMISE' or soutenance.statut.name() == 'RAPPORTS_RECUS'}"
+             class="mb-3">
+          <form th:action="@{/admin/soutenances/{id}/autoriser(id=${soutenance.id})}" method="post">
+            
+            <label class="form-label fw-semibold small">Commentaire d'autorisation</label>
+            <input type="text" name="commentaire" class="form-control form-control-sm mb-2"
+                   value="Prérequis vérifiés. Soutenance autorisée."/>
+            <button type="submit" class="btn btn-success fw-semibold w-100"
+                    onclick="return confirm('Autoriser cette soutenance ?')">
+              <i class="bi bi-check-circle me-2"></i>Autoriser la soutenance
+            </button>
+          </form>
+        </div>
+
+        <!-- Planifier -->
+        <div th:if="${soutenance.statut.name() == 'AUTORISEE'}">
+          <form th:action="@{/admin/soutenances/{id}/planifier(id=${soutenance.id})}" method="post">
+            
+            <div class="mb-2">
+              <label class="form-label fw-semibold small">Date de soutenance *</label>
+              <input type="date" name="date" class="form-control form-control-sm" required/>
+            </div>
+            <div class="mb-2">
+              <label class="form-label fw-semibold small">Heure *</label>
+              <input type="time" name="heure" class="form-control form-control-sm" value="10:00" required/>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Lieu *</label>
+              <input type="text" name="lieu" class="form-control form-control-sm"
+                     placeholder="Ex : Salle des thèses, ENSA…" required/>
+            </div>
+            <button type="submit" class="btn btn-primary fw-semibold w-100">
+              <i class="bi bi-calendar-event me-2"></i>Planifier
+            </button>
+          </form>
+        </div>
+
+        <!-- Déjà planifié -->
+        <div th:if="${soutenance.statut.name() == 'PLANIFIEE'}" class="alert alert-success small mb-0">
+          <i class="bi bi-calendar-check me-2"></i>
+          Soutenance planifiée le
+          <strong th:text="${#temporals.format(soutenance.datePlanifiee,'dd/MM/yyyy')}"></strong>
+          à <strong th:text="${soutenance.heurePlanifiee}"></strong>
+          – <span th:text="${soutenance.lieu}"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne droite : jury + sujet -->
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Sujet de thèse</div>
+        <div class="fw-semibold" th:text="${soutenance.doctorant.sujetThese}">-</div>
+      </div>
+    </div>
+
+    <!-- Membres du jury -->
+    <div class="card">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-people me-2"></i>Membres du jury</span>
+        <span class="badge bg-secondary" th:text="${#lists.size(soutenance.membresJury)} + ' membre(s)'"></span>
+      </div>
+      <div class="card-body p-0">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Nom complet</th><th>Qualité</th><th>Établissement</th><th>Grade</th><th>Rapport</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="m : ${soutenance.membresJury}">
+              <td class="fw-semibold small" th:text="${m.nomComplet}">-</td>
+              <td>
+                <span th:class="'badge' +
+                    (${m.qualite.name() == 'PRESIDENT'} ? ' bg-primary' :
+                     ${m.qualite.name() == 'RAPPORTEUR'} ? ' bg-warning text-dark' :
+                     ${m.qualite.name() == 'EXAMINATEUR'} ? ' bg-success' : ' bg-secondary')"
+                      th:text="${m.qualite.name()}">-</span>
+              </td>
+              <td class="small text-muted" th:text="${m.etablissement}">-</td>
+              <td class="small" th:text="${m.grade ?: '—'}">-</td>
+              <td>
+                <span th:if="${m.rapportSoumis and m.rapportFavorable}"
+                      class="badge badge-VALIDE">Favorable</span>
+                <span th:if="${m.rapportSoumis and !m.rapportFavorable}"
+                      class="badge badge-REJETE">Défavorable</span>
+                <span th:unless="${m.rapportSoumis}"
+                      class="badge badge-EN_ATTENTE">En attente</span>
+                <small class="text-muted d-block"
+                       th:if="${m.dateSoumissionRapport != null}"
+                       th:text="'le ' + ${#temporals.format(m.dateSoumissionRapport,'dd/MM/yyyy')}"></small>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(soutenance.membresJury)}">
+              <td colspan="5" class="text-center text-muted py-3">
+                <i class="bi bi-people d-block mb-1"></i>
+                Aucun membre proposé par le directeur de thèse.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>

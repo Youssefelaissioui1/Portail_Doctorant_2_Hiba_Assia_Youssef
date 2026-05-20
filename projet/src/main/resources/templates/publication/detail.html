@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head th:replace="~{shared/layout :: head('Détail publication')}"></head>
+<body style="padding-top:56px;">
+<div th:replace="~{shared/layout :: navbar}"></div>
+<div th:replace="~{shared/layout :: sidebar}"></div>
+<div class="main-wrap">
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Détail publication</h4>
+  <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="card">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <span class="fw-semibold" th:text="${#strings.abbreviate(publication.titre,80)}"></span>
+    <span th:class="'badge badge-' + ${publication.statut.name()}"
+          th:text="${publication.statut.name()}"></span>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="text-muted small mb-1">Titre complet</div>
+        <div class="fw-semibold" th:text="${publication.titre}">-</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small mb-1">Type</div>
+        <span class="badge bg-secondary" th:text="${publication.type.name().replace('_',' ')}">-</span>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small mb-1">Quartile</div>
+        <span th:if="${publication.quartile != null}"
+              th:class="'badge' + (${publication.quartile.name() == 'Q1' or publication.quartile.name() == 'Q2'} ? ' bg-success' : ' bg-light text-dark border')"
+              th:text="${publication.quartile.name()}">-</span>
+        <span th:unless="${publication.quartile != null}" class="text-muted">—</span>
+      </div>
+      <div class="col-md-6">
+        <div class="text-muted small mb-1">Revue / Conférence</div>
+        <div th:text="${publication.revueOuConference ?: '—'}">-</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small mb-1">Date publication</div>
+        <div th:text="${publication.datePublication != null ? #temporals.format(publication.datePublication,'dd/MM/yyyy') : '—'}">-</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small mb-1">DOI</div>
+        <div th:text="${publication.doi ?: '—'}">-</div>
+      </div>
+      <div th:if="${publication.commentaireValidation != null}" class="col-12">
+        <div class="alert" th:classappend="${publication.statut.name() == 'VALIDE'} ? 'alert-success' : 'alert-danger'">
+          <i class="bi bi-chat-square-text me-2"></i>
+          <strong>Commentaire :</strong> <span th:text="${publication.commentaireValidation}"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div th:replace="~{shared/layout :: scripts}"></div>
+</body></html>
